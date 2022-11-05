@@ -1,0 +1,5 @@
+TkinterModernThemes
+pandas
+BeautifulSoup4
+urlib
+re
