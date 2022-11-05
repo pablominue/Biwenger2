@@ -88,6 +88,6 @@ class Pack:
         total = len(self.data.loc[(self.data['price']>= self.range[0]) & (self.data['price'] <= self.range[1])])
         above = len(self.data.loc[(self.data['price']>= self.price) & (self.data['price'] <= self.range[1])])
         below = total - above
-        profit = str((above/total)*100) + " %"
+        profit = str((above/total)*100)[:5] + " %"
 
         return profit

@@ -7,3 +7,9 @@ def profit_chance(type):
                    data.data)
     chance = pack.profit_chance()
     return chance
+
+def player_performance(name):
+    player = bw.Player(data.data,
+                       name)
+    performance = player.profitability
+    return performance
