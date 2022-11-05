@@ -1,13 +1,13 @@
+import urllib3
 from bs4 import BeautifulSoup
 import urllib
 import re
 import pandas as pd
-
 class Starters:
     def __init__(self):
         url = 'https://www.futbolfantasy.com/'
         html = urllib.request.urlopen(url)
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, features="lxml")
         teams = soup('a',class_ ='team')
         Teams = []
         for team in teams:
@@ -27,7 +27,7 @@ class Starters:
         self.starting_eleven=[]
         for url2 in links:
             html2 = urllib.request.urlopen(url2)
-            soup2 = BeautifulSoup(html2)
+            soup2 = BeautifulSoup(html2, features="lxml")
             team_ = soup2('span', class_='nombre')
             team_ = re.findall('(?<=>).*(?=<)', str(team_))
             jug = soup2('a', class_='juggador')
@@ -48,8 +48,8 @@ class Starters:
         self.starters = pd.DataFrame(self.starting_eleven, columns=['Name', 'Chance', 'Team'])
 
         # Get the starting eleven chances:
-    def starting_eleven(self, team):
-        for i, j, k in self.starters.get(self.starters['Team'] == team).values:
-            print("{}: {}".format(i, j))
+    def get_starting_eleven(self, team):
+        #for i, j, k in self.starters.get(self.starters['Team'] == team).values:
+            #print("{}: {}".format(i, j))
 
         return self.starters.get(self.starters['Team'] == team)

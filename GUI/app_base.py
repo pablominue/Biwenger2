@@ -26,6 +26,7 @@ class App(TKinterModernThemes.ThemedTKinterFrame):
         self.home = self.notebook.addTab("Home")
         self.packs = self.notebook.addTab("Packs")
         self.player = self.notebook.addTab("Player Info")
+        self.team = self.notebook.addTab("Teams")
 
         # HOME #
 
@@ -69,6 +70,27 @@ class App(TKinterModernThemes.ThemedTKinterFrame):
         self.performance_button = self.player.Button("Get Performance Rate", get_performance)
         self.performance_output = self.player.Label(text=performance.get())
 
+        # TEAMS #
+        teams = starters.starters['Team'].unique().tolist()
+        team = tk.StringVar()
+        players = tk.StringVar()
+
+        def get_starters():
+            l = start_eleven(team.get())
+            text = ""
+            for item in l:
+                temp = str(item[0]) + " " + str(item[1]) + "\n"
+                text += temp
+
+            players.set(text)
+            self.team_output.destroy()
+            self.team_output = self.team.Label(text=players.get())
+
+
+        self.team_pick = self.team.Combobox(teams, team)
+        self.starters_button = self.team.Button("Get Starters",
+                                                get_starters)
+        self.team_output = self.team.Label(text=players.get())
         self.run(
             cleanresize=True, recursiveResize=True
         )

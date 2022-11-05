@@ -1,8 +1,8 @@
-import requests
 import pandas as pd
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.model_selection import train_test_split
+import requests
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+
 
 class Data:
 
@@ -32,16 +32,15 @@ class Data:
         model2 = LinearRegression()
         model2.fit(X_poly, y)
 
-        var = model2.predict(X_poly)-y
+        var = model2.predict(X_poly) - y
         maximum = max(var)
         minimum = min(var)
 
-        self.data = self.data.assign(profitability = 2*((var-minimum)/(maximum-minimum))-1)
+        self.data = self.data.assign(profitability=2 * ((var - minimum) / (maximum - minimum)) - 1)
 
-
-        #best_profitability = self.data.sort_values(by = 'profitability',ascending = False)
-        #count = 1
-        #for i in best_profitability.head(10)['name'].values:
+        # best_profitability = self.data.sort_values(by = 'profitability',ascending = False)
+        # count = 1
+        # for i in best_profitability.head(10)['name'].values:
         #    print("{}: {}".format(count,i))
         #    count += 1
 
@@ -53,24 +52,24 @@ class Player:
                      'defender',
                      'midfielder',
                      'striker']
-        self.player_data = data.loc[data['name']==name]
+        self.player_data = data.data.loc[data.data['name'] == name]
         self.value = int(self.player_data['price'])
         self.value_var = int(self.player_data['priceIncrement'])
         self.position = positions[int(self.player_data['position'])]
         self.profitability = float(self.player_data['profitability'])
 
 
-
 class Team:
     def __init__(self):
         self.players = []
 
+
 class Pack:
-    def __init__(self, type: str, data: Data):
+    def __init__(self, type_: str, data: pd.DataFrame):
         self.data = data
-        self.type = type.lower()
+        self.type = type_.lower()
         if self.type not in ['gold', 'silver', 'bronze']:
-            raise Exception ("Input 'type' must be one of these: 'gold', 'silver', 'bronze'")
+            raise Exception("Input 'type' must be one of these: 'gold', 'silver', 'bronze'")
 
         if self.type == 'gold':
             self.range = [10000000, 30000000]
@@ -85,9 +84,11 @@ class Pack:
             self.price = 1000000
 
     def profit_chance(self):
-        total = len(self.data.loc[(self.data['price']>= self.range[0]) & (self.data['price'] <= self.range[1])])
-        above = len(self.data.loc[(self.data['price']>= self.price) & (self.data['price'] <= self.range[1])])
-        below = total - above
-        profit = str((above/total)*100)[:5] + " %"
+        total = len(
+            self.data.loc[(self.data['price'] >= self.range[0]) & (self.data['price'] <= self.range[1])])
+        above = len(
+            self.data.loc[(self.data['price'] >= self.price) & (self.data['price'] <= self.range[1])])
+
+        profit = str((above / total) * 100)[:5] + " %"
 
         return profit
