@@ -48,6 +48,5 @@ class Sscore:
         print(avg)
 
 
-ss = Sscore(rapidapi_key="de16afdbbbmsh88b8fd071513f1dp12be45jsndfb35da30901",
-            rapidapi_host="divanscore.p.rapidapi.com")
-ss.get_player_ratings("Luka Modric")
+#ss = Sscore(rapidapi_key="xxxxxx", rapidapi_host="divanscore.p.rapidapi.com")
+#ss.get_player_ratings("Luka Modric")
