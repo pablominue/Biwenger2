@@ -20,21 +20,33 @@ class Sscore:
 
         r = requests.request("GET", url, headers = self.headers,
                                 params = querystring)
-        print(r.text)
         basic_data = r.json()
         id = basic_data['players'][0]['id']
-        tournament_id = basic_data['players'][0]['team']['tournament']['id']
-        print(id)
-        url = self.url + "/players/get-statistics-seasons"
-        _querystring = {"playerId":str(id)}
+        tournament_id = basic_data['players'][0]['team']['primaryUniqueTournament']['id']
+        url = self.url + "players/get-statistics-seasons"
+        querystring = {"playerId":str(id)}
         r = requests.request("GET", url, headers=self.headers,
-                             params = _querystring)
-        print(r.text)
+                             params = querystring)
         stats_data = r.json()
-        print("stats: ",stats_data, "\n",
-              "Torunament Id: ", tournament_id)
+        season_id = stats_data['uniqueTournamentSeasons'][0]['seasons'][0]['id']
 
-        print (id)
+        url = self.url + "players/get-last-ratings"
+        querystring = {"playerId":str(id),"tournamentId":str(tournament_id),"seasonId":str(season_id)}
+
+        r = requests.request("GET", url, headers=self.headers,
+                             params = querystring)
+        last_stats = r.json()
+        avg = 0
+        for i in range (5):
+            point = float(last_stats['lastRatings'][i]['rating'])
+            avg += (point/5)
+            against = last_stats['lastRatings'][i]['opponent']['name']
+            print(
+                "Against: "+against,
+                " - ",point
+            )
+        print(avg)
+
 
 ss = Sscore(rapidapi_key="de16afdbbbmsh88b8fd071513f1dp12be45jsndfb35da30901",
             rapidapi_host="divanscore.p.rapidapi.com")
