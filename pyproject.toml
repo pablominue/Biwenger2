@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "biwenger2"
+version = "0.1.0"
+description = ""
+authors = ["Pablo Minue"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^2.2.2"
+beautifulsoup4 = "^4.12.3"
+future = "^1.0.0"
+scikit-learn = "^1.5.2"
+lxml = "^5.3.0"
+pydantic = "^2.9.1"
+fuzzywuzzy = "^0.18.0"
+levenshtein = "^0.26.0"
+flask = "^3.0.3"
+gunicorn = "^23.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

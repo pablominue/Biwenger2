@@ -1,55 +1,86 @@
-import urllib3
+
 from bs4 import BeautifulSoup
-import urllib
-import re
 import pandas as pd
-class Starters:
-    def __init__(self):
-        url = 'https://www.futbolfantasy.com/'
-        html = urllib.request.urlopen(url)
-        soup = BeautifulSoup(html, features="lxml")
-        teams = soup('a',class_ ='team')
-        Teams = []
-        for team in teams:
-            alt = team.get('alt')
-            if alt not in Teams:
-                Teams.append(alt)
+import requests
+from FutbolFantasy.const import FUTBOLFANTASY_URL
+from pydantic import BaseModel
+import logging
 
-        ### START THE CRAWLER ###
+lg = logging.getLogger(__name__)
 
-        links=[]
-        for team in teams:
-            link = team.get('href')
-            if link not in links:
-                links.append(link)
+class Player(BaseModel):
+    name: str
+    team: str
+    href: str
+    yellow_cards: int
+    red_cards: int
+    injury: float
+    matches: int
+    start_probability: int
+    goals: int
+    assists: int
+    picas: int
+    picas_per_game: float
+    futmondo_stats_total: int
+    futmondo_stats_per_match: float
+    cope_average_grade: float
+    as_stats_total: int
+    as_stats_per_match: float
 
 
-        self.starting_eleven=[]
-        for url2 in links:
-            html2 = urllib.request.urlopen(url2)
-            soup2 = BeautifulSoup(html2, features="lxml")
-            team_ = soup2('span', class_='nombre')
-            team_ = re.findall('(?<=>).*(?=<)', str(team_))
-            jug = soup2('a', class_='juggador')
-            player_data=[]
-            for i in jug:
-                player_data.append(i.contents)
-                p = re.findall('\d\d%',str(i.contents))
-                n = re.findall('(?<=>).*(?=<)',str(i.contents))
-                names = []
-                for name in self.starting_eleven:
-                    names.append(name[0])
-                if len(n)>0:
-                    if n[0] not in names:
-                        if p != []:
-                            z = [n[0], p[0], team_[0]]
-                            self.starting_eleven.append(z)
+class Team(BaseModel):
+    name: str
+    href: str
+    roaster: list[Player]
 
-        self.starters = pd.DataFrame(self.starting_eleven, columns=['Name', 'Chance', 'Team'])
+    def __str__(self) -> str:
+        return self.name
 
-        # Get the starting eleven chances:
-    def get_starting_eleven(self, team):
-        #for i, j, k in self.starters.get(self.starters['Team'] == team).values:
-            #print("{}: {}".format(i, j))
+class Fetcher:
+    def __init__(self) -> None:
+        self.html_data = requests.get(
+            url=FUTBOLFANTASY_URL, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0",}
+        )
+        self.soup = BeautifulSoup(self.html_data.text, "lxml")
 
-        return self.starters.get(self.starters['Team'] == team)
+    def teams(self):
+        for team in self.soup.find(class_="teams liga").children:
+            if len(str(team)) > 10:
+                soup = BeautifulSoup(requests.get(team['href']).text, "lxml")
+                players_ = soup.findAll("a", class_ = "camiseta")
+                players=[]
+                lg.info(team['alt'])
+                for x in players_:
+                    
+                    try:
+                        players.append(Player(
+                            name= x.get('href', None).replace(FUTBOLFANTASY_URL+'jugadores/', '').replace('-',' '),
+                            team = team['alt'],
+                            href = x.get('href', None),
+                            yellow_cards = x.get('data-totalamarillas', 0),
+                            red_cards = x.get('data-totalrojas', 0),
+                            injury = x.get('data-lesion', 0),
+                            matches = x.get('data-totalpartidosjugados', 0),
+                            start_probability = int(x.get('data-probabilidad', '0%').replace('%', '')),
+                            goals = x.get('data-totalgoles', 0),
+                            assists = x.get('data-totalasistencias',0),
+                            picas = x.get('data-totalpicas', 0),
+                            picas_per_game = float(x.get('data-totalpicaspartido', '0').replace('', '0')),
+                            futmondo_stats_total = x.get('data-totalpuntosfutmondostats', 0),
+                            futmondo_stats_per_match = x.get('data-totalpuntosfutmondostatspartido', 0),
+                            cope_average_grade = x.get('data-totalnotacopepartido', 0),
+                            as_stats_total = x.get('data-totalpuntosfutmondomixtoas', 0),
+                            as_stats_per_match = x.get('data-totalpuntosfutmondomixtoaspartido', 0),
+
+                        ))
+                    except:
+                        continue
+                yield Team(name=team['alt'], href=team['href'], roaster=players)
+
+    def get_df(self) -> pd.DataFrame:
+        df = pd.DataFrame()
+        for team in self.teams():
+            for player in team.roaster:
+                df = pd.concat([df, pd.DataFrame({k: [v] for k, v in dict(player).items()})])
+        return df
+    

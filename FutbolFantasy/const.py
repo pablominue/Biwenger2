@@ -1,0 +1,1 @@
+FUTBOLFANTASY_URL = "https://www.futbolfantasy.com/"
